@@ -24,6 +24,7 @@ void dispose() {
 }
 
 Future<void> _login() async {
+  GlobalState global = AppHelpers.getState<GlobalState>(listen: false);
   if (_formKey.currentState!.validate()) {
     final username = _usernameController.text;
     final password = _passwordController.text;
@@ -32,9 +33,14 @@ Future<void> _login() async {
     if (username=='admin' && password=='admin123') {
       await prefs.setString('login', 'Administrator');
       AppHelpers.navigation.openPage(Main.home);
-      context.watch<GlobalState>().name='Administrator';
+      global.setName('Administrator');
       AppHelpers.showSnackBar(content: const Text('Kamu login sebagai administrator'),color: Colors.green);
-    } else {
+    } else if (username=='sales' && password=='sales123'){
+      await prefs.setString('login', 'Sales');
+      AppHelpers.navigation.openPage(Main.home);
+      global.setName('Sales');
+      AppHelpers.showSnackBar(content: const Text('Kamu login sebagai sales'),color: Colors.green);
+    }else {
       AppHelpers.showSnackBar(content: const Text('Username atau password salah'), color: Colors.red);
     }
   }

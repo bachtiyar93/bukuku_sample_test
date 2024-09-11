@@ -1,9 +1,10 @@
 import 'package:bukuku_sample_test/Model/product.dart';
+import 'package:bukuku_sample_test/Model/table.dart';
 
 class CartItem {
   final ProductItem product;
   int quantity;
-  int table;
+  TableData table;
 
   CartItem({
     required this.product,

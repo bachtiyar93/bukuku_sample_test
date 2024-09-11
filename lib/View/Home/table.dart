@@ -2,6 +2,7 @@ import 'package:bukuku_sample_test/Model/table.dart';
 import 'package:bukuku_sample_test/core/AppHelpers.dart';
 import 'package:bukuku_sample_test/global_state.dart';
 import'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class TableManagement extends StatefulWidget {
   const TableManagement({super.key});
@@ -12,24 +13,19 @@ class TableManagement extends StatefulWidget {
 }
 
 class _TableManagementState extends State<TableManagement> {
-  List<TableData> tables = [
-    TableData(number: 1, status: TableStatus.available),
-    TableData(number: 2, status: TableStatus.occupied),
-    TableData(number: 3, status: TableStatus.available),
-    // Tambahkan data meja lainnya di sini
-  ];
+
 
   void _addTable() {
     setState(() {
-      int newTableNumber = tables.length + 1;
-      tables.add(TableData(number: newTableNumber, status: TableStatus.available));
+      int newTableNumber = global.tables.length + 1;
+      global.tables.add(TableData(number: newTableNumber, status: TableStatus.available));
     });
   }void _deleteTable(int tableNumber) {
     setState(() {
-      tables.removeWhere((table) => table.number == tableNumber);
+      global.tables.removeWhere((table) => table.number == tableNumber);
       // Perbarui nomor meja setelah penghapusan
-      for (int i = 0; i < tables.length; i++) {
-        tables[i].number = i + 1;
+      for (int i = 0; i < global.tables.length; i++) {
+        global.tables[i].number = i + 1;
       }
     });
   }
@@ -50,17 +46,27 @@ class _TableManagementState extends State<TableManagement> {
           crossAxisCount: 3,
           childAspectRatio: 1.0,
         ),
-        itemCount: tables.length,
+        itemCount: global.tables.length,
         itemBuilder: (context, index) {
-          final table = tables[index];
+          final table = global.tables[index];
           return GestureDetector(
             onTap: () {
+              if(table.status==TableStatus.occupied){
+                return AppHelpers.showSnackBar(content: Text('Meja terisi'), color: Colors.amber);
+              }
+              if(table.status==TableStatus.occupied && table==global.tableSelected){
+                setState(() {
+                  global.tables.where((element) => element==global.tableSelected).first.status=TableStatus.occupied;
+                });
+                 AppHelpers.showSnackBar(content: Text('Meja dipindahkan'), color: Colors.green);
+              }
               setState(() {
                 if (table.status == TableStatus.available) {
                   table.status = TableStatus.occupied;
                 } else {
                   table.status = TableStatus.available;
                 }});
+              global.selectTable(table);
             },
             child: Card(
               color: table.status == TableStatus.available

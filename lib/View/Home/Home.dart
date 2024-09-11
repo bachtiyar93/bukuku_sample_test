@@ -1,5 +1,6 @@
 import 'package:bukuku_sample_test/Model/product.dart';
 import 'package:bukuku_sample_test/Model/summary.dart';
+import 'package:bukuku_sample_test/Model/table.dart';
 import 'package:bukuku_sample_test/View/Home/cart.dart';
 import 'package:bukuku_sample_test/View/Home/drawer.dart';
 import 'package:bukuku_sample_test/View/Home/table.dart';
@@ -9,6 +10,7 @@ import 'package:bukuku_sample_test/global_state.dart';
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class Home extends StatefulWidget {
   const Home({Key? key}) : super(key: key);
@@ -18,7 +20,7 @@ class Home extends StatefulWidget {
 }
 
 class _HomeState extends State<Home> {
-  GlobalState? global;
+  late final GlobalState global;
   List<ProductItem> products = [
     ProductItem(name: 'Product 1', price: 10.0),
     ProductItem(name: 'Product 2', price: 20.0),
@@ -70,12 +72,12 @@ class _HomeState extends State<Home> {
 
   void _addToCart(ProductItem product) {
     setState(() {
-      final existingItemIndex = global!.cartItems.indexWhere((item) => item.product.name == product.name);
+      final existingItemIndex = global.cartItems.indexWhere((item) => item.product.name == product.name);
 
       if (existingItemIndex != -1) {
-        global!.cartItems[existingItemIndex].quantity++;
+        global.cartItems[existingItemIndex].quantity++;
       } else {
-        global!.cartItems.add(CartItem(product: product, quantity: 1, table: global!.tableSelected ?? 0));
+        global.cartItems.add(CartItem(product: product, quantity: 1, table: global.tableSelected ?? TableData(number: 0, status: TableStatus.occupied)));
       }
     });
   }
@@ -100,19 +102,19 @@ class _HomeState extends State<Home> {
             child: Column(
               children: [
                 Container(
-                  padding: EdgeInsets.symmetric(horizontal: 16),
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
                   height: 50,
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Text('Welcome Administrator', style: AppStyles.textL.bold,),
+                      Text('Welcome ${context.watch<GlobalState>().name}', style: AppStyles.textL.bold,),
                       IconButton(
-                          onPressed: _addProduct,
-                          icon: Icon(Icons.add_circle, size: 45,))
+                          onPressed:()=> global.name=='Administrator'?_addProduct:AppHelpers.showWarning(title: 'Error', text: 'Anda tidak memiliki akses'),
+                          icon: const Icon(Icons.add_circle, size: 45,))
                     ],
                   ),
                 ),
-                Divider(thickness: 1,),
+                 const Divider(thickness: 1,),
                 Expanded(
                   child: Container(
                     padding: const EdgeInsets.symmetric(horizontal: 30),
@@ -123,26 +125,24 @@ class _HomeState extends State<Home> {
                         return Container(
                           height: 80,
 
-                          margin: const EdgeInsets.symmetric(horizontal: 16),
+                          margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
                           decoration: BoxDecoration(
                             borderRadius: BorderRadius.circular(15),
                             border: Border.all(width: 1)
                           ),
                           child: Column(
                             children: [
-                              Container(
-                                child: ClipRRect(
-                                  borderRadius: const BorderRadius.only(topLeft: Radius.circular(15), topRight: Radius.circular(15)),
-                                  child: SizedBox(
-                                      height: 100,
-                                      child: CachedNetworkImage(
-                                        imageUrl: 'https://example.com/image.jpg',
-                                        placeholder: (context, url) => const Center(
-                                          child: Icon(Icons.image, size: 80,),
-                                        ),
-                                        errorWidget: (context, url, error) => const Icon(Icons.error),
-                                      ),),
-                                ),
+                              ClipRRect(
+                                borderRadius: const BorderRadius.only(topLeft: Radius.circular(15), topRight: Radius.circular(15)),
+                                child: SizedBox(
+                                    height: 100,
+                                    child: CachedNetworkImage(
+                                      imageUrl: 'https://example.com/image.jpg',
+                                      placeholder: (context, url) => const Center(
+                                        child: Icon(Icons.image, size: 80,),
+                                      ),
+                                      errorWidget: (context, url, error) => const Icon(Icons.error),
+                                    ),),
                               ),
                               Expanded(
                                 child: ListTile(
@@ -174,9 +174,14 @@ class _HomeState extends State<Home> {
               children: [
                 Container(
                     height: 50,
-                    alignment: Alignment.centerRight,
-                    child: IconButton(onPressed: ()=>AppHelpers.navigation.openPageClass(TableManagement()), icon: Icon(Icons.table_bar, size: 45,))),
-                Divider(),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Pesanan: ${global.tableSelected?.number==0||global.tableSelected?.number==null?"Take Away":"Meja ${global.tableSelected?.number}"}'),
+                        IconButton(onPressed: ()=>global.openTable(), icon: const Icon(Icons.table_restaurant_rounded, size: 45,)),
+                      ],
+                    )),
+                const Divider(),
                 Expanded(child: CartSummary(cartItems: global!.cartItems)),
               ],
             ),

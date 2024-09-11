@@ -3,8 +3,9 @@ import 'dart:io' show Platform;
 
 import 'package:bukuku_sample_test/Model/screen_size.dart';
 import 'package:bukuku_sample_test/Model/summary.dart';
+import 'package:bukuku_sample_test/Model/table.dart';
+import 'package:bukuku_sample_test/View/Home/table.dart';
 import 'package:bukuku_sample_test/core/AppHelpers.dart';
-import 'package:bukuku_sample_test/core/database.dart';
 import 'package:bukuku_sample_test/main.dart';
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -15,9 +16,13 @@ class GlobalState extends ChangeNotifier {
   bool logedin = false;
   bool isSkip = false;
   String name='';
-  List<int> table=[0,1,2,3,4,5,6,7,8,9,10];
-  int? tableSelected;
+  TableData? tableSelected;
   List<CartItem> cartItems = [];
+  List<TableData> tables = [
+    TableData(number: 1, status: TableStatus.available),
+    TableData(number: 2, status: TableStatus.available),
+    TableData(number: 3, status: TableStatus.available),
+  ];
 
   setDeviceOS() {
     deviceOS = Platform.operatingSystem;
@@ -58,6 +63,21 @@ class GlobalState extends ChangeNotifier {
     final prefs = await SharedPreferences.getInstance();
     prefs.setString('login','');
     AppHelpers.navigation.openPageNamedNoNav(Main.login);
+    notifyListeners();
+  }
+
+  void selectTable(TableData table) {
+    tableSelected=table;
+    notifyListeners();
+  }
+
+  openTable() async {
+    await AppHelpers.navigation.openPageClass(const TableManagement());
+    Future.delayed(const Duration(seconds: 1),()=>notifyListeners());
+  }
+
+  void setName(String s) {
+    name=s;
     notifyListeners();
   }
 
