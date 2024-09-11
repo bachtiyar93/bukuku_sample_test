@@ -109,7 +109,7 @@ class _HomeState extends State<Home> {
                     children: [
                       Text('Welcome ${context.watch<GlobalState>().name}', style: AppStyles.textL.bold,),
                       IconButton(
-                          onPressed:()=> global.name=='Administrator'?_addProduct:AppHelpers.showWarning(title: 'Error', text: 'Anda tidak memiliki akses'),
+                          onPressed:global.name=='Administrator'?_addProduct:()=>AppHelpers.showWarning(title: 'Error', text: 'Anda tidak memiliki akses'),
                           icon: const Icon(Icons.add_circle, size: 45,))
                     ],
                   ),
